@@ -1,0 +1,94 @@
+<!--
+
+Goals :
+
+ Compile java code and generate class files.
+ Bundle the class files into a Jar file
+ Copy web files into a build folder
+ Package the application
+ Run the test cases
+ 
+ 
+ Note : All the intermediate build output will be under the build folder 
+ Note : Clean up the previous build content files as the first step in the build process.
+-->
+
+<project name="javademo" default="runtests">
+
+<property file="build.properties"/>
+<property name="appversion" value="2.0"/>
+
+
+<target name="clean">
+	<delete dir="build"/>
+	<delete dir="dist"/>
+</target>
+
+<target name="init" depends="clean">
+
+	<mkdir dir="dist"/>
+	<mkdir dir="build"/>
+	<mkdir dir="build/classes"/>
+	<mkdir dir="build/jar"/>
+	<mkdir dir="build/web"/>
+	<mkdir dir="build/test/classes"/>
+	<mkdir dir="build/junit"/>
+
+</target>
+
+	<target name="compile" depends="init">
+		 <javac srcdir="src/java"
+         destdir="build/classes"
+         classpath="lib/junit.jar"
+           />
+		   
+	</target>
+
+	<target name="jar" depends="compile">
+		 <jar destfile="build/jar/app-${appversion}.jar" basedir="build/classes"/>
+
+	</target>
+
+	<target name="copyweb">
+		<copy todir="build/web">
+			<fileset dir="src/web"/>
+		</copy>
+
+	</target>
+
+	<target name="package" depends="jar,copyweb">
+	
+		 <zip destfile="dist/app-${appversion}.zip">
+			<fileset dir="build/jar"/>
+			<fileset dir="build/web"/>
+		</zip>
+
+	</target>
+	<target name="compile-tests">
+		<javac srcdir="test"
+         destdir="build/test/classes"
+         classpath="build/classes"
+           />
+	
+	</target>
+	<target name="runtests" depends="package,compile-tests">
+	
+		<junit dir="build/test/classes" fork="yes">
+						
+						<classpath>
+							<pathelement path="build/jar/app-${appversion}.jar"/>
+							<pathelement path="build/test/classes"/>
+							<pathelement path="lib/junit.jar"/>
+						</classpath>
+						<formatter type="xml"/>
+						<batchtest todir="build/junit">
+							<fileset dir="build/test/classes" >
+							</fileset>
+						</batchtest>
+		</junit>
+		
+	
+	</target>
+
+
+</project>
